@@ -1,13 +1,10 @@
 import os
+from typing import Tuple
 
 
-# A function that returns files only from a list
-def lister():
-    files = []
-    print("\nIf you want to use the current directory, leave it empty.")
-
-    # Gets directory
+def lister() -> list[str]:
     try:
+        print("\nIf you want to use the current directory, leave it empty.")
         directory = input("What directory you want to use: ")
 
         if directory == "":
@@ -15,61 +12,44 @@ def lister():
 
         os.chdir(directory)
     except OSError:
-        print("Error, this is not a valid directory.")
+        print("Error: This is not a valid directory.")
 
     contents = os.listdir(directory)
-
-    # Appends files only to the list
-    for content in contents:
-        if os.path.isfile(content):
-            files.append(content)
+    files = [content for content in contents if os.path.isfile(content)]
 
     return files
 
 
-# A function that filters files by their extension
-def ext():
-    extensions = []
-    sub_extensions = []
-    print("\nLeave empty if you finished.")
+def ext() -> Tuple[tuple[str, ...], tuple[str, ...]]:
+    extensions: list[str] = []
+    sub_extensions: list[str] = []
 
-    # A loop to enter extensions
+    print("\nLeave empty if you finished.")
     while True:
         extension = input("Enter an extension: ").lower()
-        if extension and extension[0] != '.':
-            extension = '.' + extension
 
-        elif extensions and not extension:
-            sub_extension = input("Enter a sub extension: ").lower()
-            if sub_extension:
-                if sub_extension != '.':
-                    sub_extension = '.' + extension
+        if extension:
+            extensions.append(extension)
+        elif extensions:
+            while True:
+                sub_extension = input("Enter a sub extension: ").lower()
 
-                sub_extensions.append(sub_extension)
-
-            elif not sub_extension and not extension:
-                break
-
-        elif not extensions and not extension:
-            print("No extensions has been entered.")
-            exit()
-
-        extensions.append(extension)
+                if sub_extension:
+                    sub_extensions.append(sub_extension)
+                else:
+                    break
+            break
+        else:
+            raise Exception("Error: No extensions has been entered.")
 
     return tuple(extensions), tuple(sub_extensions)
 
 
-# Filters which files to edit and returns it
-def selector():
+def selector() -> Tuple[list[str], list[str], tuple[str, ...]]:
     files = lister()
     extensions, sub_extensions = ext()
-    selected_files, subtitle_files = [], []
 
-    for file in files:
-        if file.endswith(sub_extensions):
-            subtitle_files.append(file)
+    selected_files = [file for file in files if file.endswith(extensions)]
+    sub_files = [file for file in files if file.endswith(sub_extensions)]
 
-        elif file.endswith(extensions):
-            selected_files.append(file)
-
-    return selected_files, subtitle_files
+    return selected_files, sub_files, sub_extensions

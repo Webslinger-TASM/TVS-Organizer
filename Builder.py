@@ -1,128 +1,113 @@
 import os
+import IMDb_Scraper as IMDb
+from typing import Tuple
 
 
 class ToFormat:
-    def __init__(self, mode, files, name='', year='', sxxexxes='', _ep_total=0, ep_names='', extensions=''):
+    def __init__(self, mode, files, name='', year='', sxxexxes='', se_total=0, ep_total=0, ep_names='', extensions=''):
         self.mode = mode
         self.files = files
         self.name = self.get_name()
-        self.year = self.get_year()
-        self.sxxexxes, self._ep_total = self.get_sxxexxes()
-        self.ep_names = self.get_ep_names()
         self.extensions = self.get_extensions()
 
-    # Gets name
+        if self.mode in ("imdb", '1'):
+            self.years, self.sxxexxes, self.se_total, self.ep_names = IMDb.main()
+            self.ep_total = [len(season) for season in self.sxxexxes]
+        else:
+            self.sxxexxes, self.se_total, self.ep_total = self.get_sxxexxes()
+            self.years = self.get_years()
+            self.ep_names = self.get_ep_names()
+            
     @staticmethod
-    def get_name():
+    def get_name() -> str:
         return input("\nShow name: ")
 
-    # Gets year
-    @staticmethod
-    def get_year():
-        year = ''
-        year_start = input("What year did it started? ")
-        year_end = input("What year did it ended? (Leave empty if there isn't) ")
+    def get_years(self) -> list[str]:
+        years: list[str] = []
 
-        try:
-            int(year_start)
-            year = '(' + year_start
+        for se_current in range(self.se_total):
+            print(f"\nFor season {se_current+1}")
+            try:
+                year_start = int(input("What year did it started? "))
+                year_end = input("What year did it ended? (Leave empty if there isn't) ")
 
-            if year_end:
-                int(year_end)
-                year += '-' + year_end + ')'
-            else:
-                year += ')'
+                tmp_year = [f"({year_start}"]
 
-        except ValueError:
-            print(f"ValueError: {year_start} and/or {year_end} are/is not a valid number.")
+                if year_end:
+                    tmp_year.append(f"-{int(year_end)})")
+                else:
+                    tmp_year.append(')')
 
-        return year
+                years.append(''.join(tmp_year))
 
-    # Gets season and episode number for each episode
-    def get_sxxexxes(self):
-        ep_total = 0
-        sxxexxes = []
+            except ValueError:
+                print(f"ValueError: {year_start} and/or {year_end} are/is not a valid number.")
+
+        return years
+
+    def get_sxxexxes(self) -> Tuple[list[list[str]], int, list[int]]:
+        ep_total: list[int] = []
+        sxxexxes: list[list[str]] = []
 
         if input("\nIs it multiple seasons? (y/n) ") in ('y', 'yes'):
-            se_nums = int(input("Number of seasons: "))
+            try:
+                se_total = int(input("Number of seasons: "))
+            except ValueError:
+                print(f"ValueError: {se_total} is not a valid number.")
         else:
-            se_nums = 1
+            se_total = 1
 
-        se_current = 1
+        for se_current in range(se_total):
+            se = f"S{se_current+1:02d}"
 
-        while se_current <= se_nums:
-            if se_current < 10:
-                se = 'S0' + str(se_current)
-            else:
-                se = 'S' + str(se_current)
+            try:
+                ep_num = int(input(f"Number of episodes at season {se_current+1}: "))
+                ep_total.append(ep_num)
+            except ValueError:
+                print(f"ValueError: {ep_num} is not a valid number.")
 
-            ep_num = int(input(f"Number of episodes at season {se_current}: "))
-            ep_total += ep_num
+            tmp_sxxexxes: list[str] = []
 
-            ep_current = 1
-            se_current += 1
+            for ep_current in range(ep_total[se_current]):
+                ep = f"E{ep_current+1:02d}"
+                tmp_sxxexxes.append(f"{se}{ep}")
 
-            while ep_current <= ep_num:
-                if ep_current < 10:
-                    ep = 'E0' + str(ep_current)
-                else:
-                    ep = 'E' + str(ep_current)
+            sxxexxes.append(tmp_sxxexxes)
 
-                if self.mode == 1:
-                    sxxexxes.append(se + ep)
-                else:
-                    sxxexxes.append(se + ' ' + ep)
+        if sum(ep_total) != len(self.files):
+            raise Exception(f"Error: The number of episodes has been created is {sum(ep_total)}, while the number of files are {len(self.files)}.")
 
-                ep_current += 1
+        return sxxexxes, se_total, ep_total
 
-        if ep_total != len(self.files):
-            print(f"Error: The number of episode names has been created is {ep_total}, "
-                  f"while the number of files are {len(self.files)}.")
-            exit()
+    def get_ep_names(self) -> list[list[str]]:
+        ep_names: list[list[str]] = []
 
-        return sxxexxes, ep_total
+        print(r'Warning: The following letters are not allowed: \/:*?\"<>|')
 
-    # Gets episode's name
-    def get_ep_names(self):
-        ep_names = []
-
-        # If there's a txt file shares the same name of the show, reads it.
-        # It works by reading each line, and each line represents the episode name.
-        if os.path.exists(f'{self.name}.txt'):
-            with open(f'{self.name}.txt', 'r') as file:
+        for se_current in range(self.se_total):
+            if self.mode in ("files", '2'):
                 try:
-                    lines = file.readlines()
-                    if len(lines) != self._ep_total:
-                        print(f"Error: Lines in '{file.name}' does not match the number of the episodes.")
-                    else:
-                        # Reads the file to add the episode's name
-                        for line in lines:
-                            if self.mode == 2:
-                                line = '(' + line.strip() + ')'
+                    with open(f"{input(f"TXT filename for season {se_current+1}: ")}.txt", 'r') as file:
+                        lines = file.readlines()
 
-                            ep_names.append(line.strip())
+                        if len(lines) != self.ep_total[se_current-1]:
+                            raise Exception(f"Error: Lines in '{file.name}' does not match the number of the episodes.")
+
+                        ep_names.append([line.strip() for line in lines])
 
                 except OSError:
                     print(f"Error: The file {file.name} is corrupted.")
 
-        # If it doesn't exist, asks the user and appends it to the list
-        else:
-            ep_current = 1
+            else:
+                tmp_ep_names: [list[str]] = []
 
-            while len(ep_names) != self._ep_total:
-                ep_name = input(f"Enter the name of episode {ep_current}: ")
-                if self.mode == 2:
-                    ep_name = '(' + ep_name + ')'
+                for ep_current in range(self.ep_total[se_current]):
+                    tmp_ep_names.append(input(f"Enter the name of episode {ep_current+1} for season {se_current+1}: "))
 
-                ep_names.append(ep_name)
-                ep_current += 1
+                ep_names.append(tmp_ep_names)
 
         return ep_names
 
-    # Gets extension files
-    def get_extensions(self):
-        extensions = []
-        for file in self.files:
-            extensions.append(os.path.splitext(file)[-1])
-
+    def get_extensions(self) -> list[str]:
+        extensions = [os.path.splitext(file)[-1] for file in self.files]
         return extensions
