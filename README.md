@@ -20,6 +20,10 @@ Name (Year) SXXEXX (EP_Name)
 
 2. **Sorts Files:**
     - Organizes files into a structured directory based on the show name, year, and season.
+  
+3. **Fetch TV Show Data from IMDb:**
+    - Fetch episode names and year directly from the TVS's IMDb page.
+    - Alternatively, save the IMDb page as an HTML file for each season.
 
 ### Output Example
 
@@ -31,17 +35,24 @@ Name (Year) SXXEXX (EP_Name)
     |
     | - Spider-Man (1994) - Season 01
     |   | - Spider-Man (1994) - S01E01 - Night of the Lizard
+    |   |   | - Spider-Man (1994) - S01E01 - Night of the Lizard.mkv
     |   |   | - Spider-Man (1994) - S01E01 - Night of the Lizard.mp4
     |   |   | - Spider-Man (1994) - S01E01 - Night of the Lizard.srt
     |
     | - Spider-Man (95-96) - Season 02
     |   | - Spider-Man (95-96) S02E01 - Neogenic Nightmare Chapter 1 - The Insidious Six
-    |   |   | - Spider-Man (95-96) S01E02 (Neogenic Nightmare Chapter 1 - The Insidious Six).mp4
-    |   |   | - Spider-Man (95-96) S01E02 (Neogenic Nightmare Chapter 1 - The Insidious Six).srt
+    |   |   | - Spider-Man (1995-1996) S01E02 (Neogenic Nightmare Chapter 1 - The Insidious Six).mkv
+    |   |   | - Spider-Man (1995-1996) S01E02 (Neogenic Nightmare Chapter 1 - The Insidious Six).mp4
+    |   |   | - Spider-Man (1995-1996) S01E02 (Neogenic Nightmare Chapter 1 - The Insidious Six).srt
     ```
-
+    
 ## Requirements
 
 - Python 3.12
-- OS Library
-
+- `os`
+- `typing`
+- `requests`
+- `bs4`
+- `tqdm`
+- `lxml`
+- `re`
