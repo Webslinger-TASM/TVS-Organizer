@@ -1,7 +1,7 @@
 import os
 import Builder
 from tqdm import tqdm
-from typing import Tuple, List, Union
+from typing import List, Union
 
 
 def settings(new_filename, mode) -> List[Union[str, bool]]:
@@ -39,28 +39,31 @@ def get_year_range(years: list[str]) -> str:
     return year
 
 
-def split_strings(files: list, new_filenames) -> Tuple[list[list[str]], list[list[str]]]:
-    new_files: list[list[str]] = []
-    new_extensions: list[list[str]] = []
+def split_strings(old_list: list[str], new_filenames) -> list[list[str]]:
+    new_list: list[list[str]] = []
 
     index = 0
     
     for se_current in range(new_filenames.se_total):
-        new_files.append(files[index:index+new_filenames.ep_total[se_current]])
-        new_extensions.append(new_filenames.extensions[index:index+new_filenames.ep_total[se_current]])
+        new_list.append(old_list[index:index+new_filenames.ep_total[se_current]])
 
         index += new_filenames.ep_total[se_current]
 
-    return new_files, new_extensions
+    return new_list
 
 
-def sort(new_filenames: Builder.ToFormat, files: list[str], sub_files: list[str], sub_extensions: tuple[str, ...]) -> None:
+def sort(new_filenames: Builder.ToFormat, files: list[str], sub_files: list[list[str]], sub_extensions: tuple[str, ...]) -> None:
     mode = input("\nHow would like to rename your files? (Spider/Bat) (1/2) ").lower()
     addons = settings(new_filenames, mode)
-    files, new_filenames.extensions = split_strings(files, new_filenames)
+
+    files = split_strings(files, new_filenames)
+    new_filenames.extensions = split_strings(new_filenames.extensions, new_filenames)
+
     files_dir = os.getcwd()
     show_dir = os.path.join(files_dir, os.path.basename(new_filenames.name + " " + get_year_range(new_filenames.years)))
     os.makedirs(show_dir, exist_ok=True)
+
+    index = 0
 
     for se_current in tqdm(range(new_filenames.se_total)):
 
@@ -86,8 +89,10 @@ def sort(new_filenames: Builder.ToFormat, files: list[str], sub_files: list[str]
             os.makedirs(ep_dir, exist_ok=True)
             new_filename = os.path.join(ep_dir, os.path.basename(ep_dir) + ext)
             os.rename(os.path.join(files_dir, file), new_filename)
+            
+            if sub_files and index <= len(sub_files):
+                for sub_file, sub_ext in zip(sub_files[index], sub_extensions):
+                    new_sub_filename = os.path.join(ep_dir, os.path.basename(ep_dir) + os.path.splitext(sub_file)[-1])
+                    os.rename(os.path.join(files_dir, sub_file), new_sub_filename)
 
-            for sub_file, sub_ext in zip(sub_files, sub_extensions):
-                new_sub_filename = os.path.join(ep_dir, os.path.basename(ep_dir) + os.path.splitext(sub_file)[-1])
-                os.rename(os.path.join(files_dir, sub_file), new_sub_filename)
-                sub_files.remove(sub_file)
+            index += 1

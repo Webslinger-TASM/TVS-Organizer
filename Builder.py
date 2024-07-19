@@ -20,7 +20,8 @@ class ToFormat:
             
     @staticmethod
     def get_name() -> str:
-        return input("\nShow name: ")
+        print("\nWarning: The following letters are not allowed: ", r'\/:*?"<>|')
+        return input("Show name: ")
 
     def get_years(self) -> list[str]:
         years: list[str] = []
@@ -82,7 +83,7 @@ class ToFormat:
     def get_ep_names(self) -> list[list[str]]:
         ep_names: list[list[str]] = []
 
-        print(r'Warning: The following letters are not allowed: \/:*?\"<>|')
+        print("\nWarning: The following letters are not allowed: ", r'\/:*?"<>|')
 
         for se_current in range(self.se_total):
             if self.mode in ("files", '2'):

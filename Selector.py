@@ -42,14 +42,30 @@ def ext() -> Tuple[tuple[str, ...], tuple[str, ...]]:
         else:
             raise Exception("Error: No extensions has been entered.")
 
-    return tuple(extensions), tuple(sub_extensions)
+    return tuple(sorted(extensions)), tuple(sorted(sub_extensions))
 
 
-def selector() -> Tuple[list[str], list[str], tuple[str, ...]]:
+def split_by_extensions(old_list: list[str], extensions: tuple[str, ...]) -> list[list[str]]:
+    new_list: list[list[str]] = []
+
+    index = 0
+
+    while index != len(old_list):
+        new_list.append(old_list[index:index + len(extensions)])
+
+        index += len(extensions)
+
+    return new_list
+
+
+def selector() -> Tuple[list[str], list[list[str]], tuple[str, ...]]:
+    print("\nWarning: Files will be sorted alphabetically.")
+    
     files = lister()
-    extensions, sub_extensions = ext()
+    extensions, sub_extensions = ext()    
 
     selected_files = [file for file in files if file.endswith(extensions)]
     sub_files = [file for file in files if file.endswith(sub_extensions)]
+    splitted_sub_files = split_by_extensions(sub_files, sub_extensions)
 
-    return selected_files, sub_files, sub_extensions
+    return selected_files, splitted_sub_files, sub_extensions
