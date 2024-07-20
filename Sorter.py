@@ -1,23 +1,23 @@
-import os
 import Builder
+
+import os
 from tqdm import tqdm
 from typing import List, Union
 
 
-def settings(new_filename, mode) -> List[Union[str, bool]]:
+def settings(name) -> List[Union[str, bool]]:
     se_addon_name = ''
     se_addon_year = False
     ep_addon_name = ''
     ep_addon_year = False
 
     if input("\nShow name in each season? (y/n) ") in ('y', 'yes'):
-        se_addon_name = new_filename.name
-        se_addon_name += ' - ' if mode in ("spider", '1') else None
+        se_addon_name = name
     if input("Year in each season? (y/n) ") in ('y', 'yes'):
         se_addon_year = True
 
     if input("Show name in each episode? (y/n) ") in ('y', 'yes'):
-        ep_addon_name = new_filename.name
+        ep_addon_name = name
         if input("Year in each episode? (y/n) ") in ('y', 'yes'):
             ep_addon_year = True
 
@@ -39,26 +39,8 @@ def get_year_range(years: list[str]) -> str:
     return year
 
 
-def split_strings(old_list: list[str], new_filenames) -> list[list[str]]:
-    new_list: list[list[str]] = []
-
-    index = 0
-    
-    for se_current in range(new_filenames.se_total):
-        new_list.append(old_list[index:index+new_filenames.ep_total[se_current]])
-
-        index += new_filenames.ep_total[se_current]
-
-    return new_list
-
-
-def sort(new_filenames: Builder.ToFormat, files: list[str], sub_files: list[list[str]], sub_extensions: tuple[str, ...]) -> None:
-    mode = input("\nHow would like to rename your files? (Spider/Bat) (1/2) ").lower()
-    addons = settings(new_filenames, mode)
-
-    files = split_strings(files, new_filenames)
-    new_filenames.extensions = split_strings(new_filenames.extensions, new_filenames)
-
+def sort(new_filenames: Builder.ToFormat, sub_files: list[list[str]], sub_extensions: tuple[str, ...], mode) -> None:
+    addons = settings(new_filenames.name)
     files_dir = os.getcwd()
     show_dir = os.path.join(files_dir, os.path.basename(new_filenames.name + " " + get_year_range(new_filenames.years)))
     os.makedirs(show_dir, exist_ok=True)
@@ -80,11 +62,17 @@ def sort(new_filenames: Builder.ToFormat, files: list[str], sub_files: list[list
         os.makedirs(se_dir, exist_ok=True)
         os.chdir(se_dir)
 
-        for file, sxxexx, ep_name, ext in zip(files[se_current], new_filenames.sxxexxes[se_current], new_filenames.ep_names[se_current], new_filenames.extensions[se_current]):
+        for file, sxxexx, ep_name, ext in zip(new_filenames.files[se_current], new_filenames.sxxexxes[se_current], new_filenames.ep_names[se_current], new_filenames.extensions[se_current]):
             if mode in ("spider", '1'):
-                ep_dir = os.path.join(se_dir, f"{addons[2]} {addons[3]}" + sxxexx + " - " + ep_name).strip()
+                if addons[2]:
+                    ep_dir = os.path.join(se_dir, f"{addons[2]} {addons[3]} - " + sxxexx + " - " + ep_name).strip()
+                else:
+                    ep_dir = os.path.join(se_dir, sxxexx + " - " + ep_name).strip()
             else:
-                ep_dir = os.path.join(se_dir, f"{addons[2]} {addons[3]}" + sxxexx + " " + f"({ep_name})").strip()
+                if addons[2]:
+                    ep_dir = os.path.join(se_dir, f"{addons[2]} {addons[3]} " + f"{sxxexx[0:3]} {sxxexx[3:]} " + f"({ep_name})").strip()
+                else:
+                    ep_dir = os.path.join(se_dir, f"{sxxexx[0:3]} {sxxexx[3:]} " + f"({ep_name})").strip()
 
             os.makedirs(ep_dir, exist_ok=True)
             new_filename = os.path.join(ep_dir, os.path.basename(ep_dir) + ext)

@@ -1,8 +1,11 @@
+import Utilites as Utils
+
 from bs4 import BeautifulSoup
 from lxml.etree import XMLSyntaxError
 from requests import get, exceptions
 from re import match
 from typing import Tuple
+from os.path import join
 
 
 def get_html(url: str) -> str:
@@ -42,7 +45,7 @@ def parser(unparsed_html: str) -> Tuple[list[str], str, str, list[str]]:
     return titles, first_date, last_date, links_seasons
 
 
-def sort_titles(titles: list[str]) -> Tuple[list[str], list[str]]:
+def sort_titles(titles: list[str], mode) -> Tuple[list[str], list[str]]:
     sxxexxes: list[str] = []
     ep_names: list[str] = []
 
@@ -53,8 +56,8 @@ def sort_titles(titles: list[str]) -> Tuple[list[str], list[str]]:
 
         sxxexxes.append(f"{sxx}{exx}")
 
-        index = len(f"{sxxexxes[-1]} _")
-        ep_names.append(title[index:].replace(':', ' -').strip())
+        index = len(f"{sxx+exx} _")
+        ep_names.append(Utils.clean_string(title[index:], mode))
 
     return sxxexxes, ep_names
 
@@ -66,12 +69,16 @@ def sort_dates(first_date: str, last_date: str) -> str:
         return f"({first_date[-4:]})"
 
 
-def main() -> Tuple[list[str], list[list[str]], int, list[list[str]]]:
+def main(mode) -> Tuple[list[str], list[list[str]], int, list[list[str]]]:
     if input("\nDo you want to automatically get the HTML content by requesting the website? (y/n) ") in ('y', 'yes'):
-        mode = "Online"
-        url = input("What's the link to your show in IMDb (Episodes Guide)? ")
+        source = "Online"
+        url = input("What's the link to your show in IMDb? ").split('?')[0]
+
+        if "episodes" not in url:
+            url = join(url, "episodes")
+
     else:
-        mode = "Offline"
+        source = "Offline"
 
     years: list[str] = []
     sxxexxes: list[list[str]] = []
@@ -81,7 +88,7 @@ def main() -> Tuple[list[str], list[list[str]], int, list[list[str]]]:
     se_current = 1
 
     while True:
-        if mode == "Online":
+        if source == "Online":
             if se_current != 1:
                 html = get_html(f"https://imdb.com{links[se_current-1]}")
             else:
@@ -98,7 +105,7 @@ def main() -> Tuple[list[str], list[list[str]], int, list[list[str]]]:
 
         years.append(sort_dates(first_date, last_date))
 
-        tmp_sxxexxes, tmp_titles = sort_titles(titles)
+        tmp_sxxexxes, tmp_titles = sort_titles(titles, mode)
         sxxexxes.append(tmp_sxxexxes), ep_names.append(tmp_titles)
 
         if se_current == len(links):

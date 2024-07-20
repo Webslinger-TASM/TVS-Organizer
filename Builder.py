@@ -1,27 +1,30 @@
-import os
+import Utilites as Utils
 import IMDb_Scraper as IMDb
+
+import os
 from typing import Tuple
 
 
 class ToFormat:
-    def __init__(self, mode, files, name='', year='', sxxexxes='', se_total=0, ep_total=0, ep_names='', extensions=''):
+    def __init__(self, source, mode, files):
+        self.source = source
         self.mode = mode
         self.files = files
         self.name = self.get_name()
-        self.extensions = self.get_extensions()
 
         if self.mode in ("imdb", '1'):
-            self.years, self.sxxexxes, self.se_total, self.ep_names = IMDb.main()
+            self.years, self.sxxexxes, self.se_total, self.ep_names = IMDb.main(self.mode)
             self.ep_total = [len(season) for season in self.sxxexxes]
         else:
             self.sxxexxes, self.se_total, self.ep_total = self.get_sxxexxes()
             self.years = self.get_years()
             self.ep_names = self.get_ep_names()
-            
-    @staticmethod
-    def get_name() -> str:
-        print("\nWarning: The following letters are not allowed: ", r'\/:*?"<>|')
-        return input("Show name: ")
+
+        self.extensions = self.get_extensions()
+        self.files = Utils.split_strings(files, self.se_total, self.ep_total)
+
+    def get_name(self) -> str:
+        return Utils.clean_string(input("\nShow name: "), self.mode)
 
     def get_years(self) -> list[str]:
         years: list[str] = []
@@ -76,17 +79,15 @@ class ToFormat:
             sxxexxes.append(tmp_sxxexxes)
 
         if sum(ep_total) != len(self.files):
-            raise Exception(f"Error: The number of episodes has been created is {sum(ep_total)}, while the number of files are {len(self.files)}.")
+            raise Exception(f"Error: The number of episodes {sum(self.ep_total)} has been created doesn't match the number of files {len(self.files)}.")
 
         return sxxexxes, se_total, ep_total
 
     def get_ep_names(self) -> list[list[str]]:
         ep_names: list[list[str]] = []
 
-        print("\nWarning: The following letters are not allowed: ", r'\/:*?"<>|')
-
         for se_current in range(self.se_total):
-            if self.mode in ("files", '2'):
+            if self.source in ("files", '2'):
                 try:
                     with open(f"{input(f"TXT filename for season {se_current+1}: ")}.txt", 'r') as file:
                         lines = file.readlines()
@@ -94,10 +95,10 @@ class ToFormat:
                         if len(lines) != self.ep_total[se_current-1]:
                             raise Exception(f"Error: Lines in '{file.name}' does not match the number of the episodes.")
 
-                        ep_names.append([line.strip() for line in lines])
+                        ep_names.append([Utils.clean_string(line.strip(), self.mode) for line in lines])
 
-                except OSError:
-                    print(f"Error: The file {file.name} is corrupted.")
+                except FileNotFoundError or OSError as err:
+                    print(f"An error occured while trying to read the file {file.name}. {err}")
 
             else:
                 tmp_ep_names: [list[str]] = []
@@ -105,10 +106,9 @@ class ToFormat:
                 for ep_current in range(self.ep_total[se_current]):
                     tmp_ep_names.append(input(f"Enter the name of episode {ep_current+1} for season {se_current+1}: "))
 
-                ep_names.append(tmp_ep_names)
+                ep_names.append([Utils.clean_string(ep_name, self.mode) for ep_name in tmp_ep_names])
 
         return ep_names
 
-    def get_extensions(self) -> list[str]:
-        extensions = [os.path.splitext(file)[-1] for file in self.files]
-        return extensions
+    def get_extensions(self) -> list[list[str]]:
+        return Utils.split_strings([os.path.splitext(file)[-1] for file in self.files], self.se_total, self.ep_total)
