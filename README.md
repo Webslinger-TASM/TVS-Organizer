@@ -16,7 +16,6 @@ Name (Year) SXXEXX (EP_Name)
 
 1. **Renames Files to Spider and Bat Formats:**
     - Automatically renames files to Spider or Bat format.
-    - Automatically converts files to Spider or Bat format.
 
 2. **Sorts Files:**
     - Organizes files into a structured directory based on the show name, year, and season.
@@ -40,10 +39,10 @@ Name (Year) SXXEXX (EP_Name)
     |   |   | - Spider-Man (1994) - S01E01 - Night of the Lizard.srt
     |
     | - Spider-Man (1995-1996) - Season 02
-    |   | - Spider-Man (1995-1996) S02E01 - Neogenic Nightmare Chapter 1; The Insidious Six
-    |   |   | - Spider-Man (1995-1996) S02E02 (Neogenic Nightmare Chapter 1; The Insidious Six).mkv
-    |   |   | - Spider-Man (1995-1996) S02E02 (Neogenic Nightmare Chapter 1; The Insidious Six).mp4
-    |   |   | - Spider-Man (1995-1996) S02E02 (Neogenic Nightmare Chapter 1; The Insidious Six).srt
+    |   | - Spider-Man (1995-1996) S02 E01 (Neogenic Nightmare Chapter 1; The Insidious Six)
+    |   |   | - Spider-Man (1995-1996) S02 E02 (Neogenic Nightmare Chapter 1; The Insidious Six).mkv
+    |   |   | - Spider-Man (1995-1996) S02 E02 (Neogenic Nightmare Chapter 1; The Insidious Six).mp4
+    |   |   | - Spider-Man (1995-1996) S02 E02 (Neogenic Nightmare Chapter 1; The Insidious Six).srt
     ```
     
 ## Requirements
