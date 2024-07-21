@@ -4,24 +4,6 @@ import os
 from typing import Tuple
 
 
-def lister() -> list[str]:
-    try:
-        print("\nIf you want to use the current directory, leave it empty.")
-        directory = input("What directory you want to use: ")
-
-        if directory == "":
-            directory = os.getcwd()
-
-        os.chdir(directory)
-    except OSError:
-        print("Error: This is not a valid directory.")
-
-    contents = os.listdir(directory)
-    files = [content for content in contents if os.path.isfile(content)]
-
-    return files
-
-
 def ext() -> Tuple[tuple[str, ...], tuple[str, ...]]:
     extensions: list[str] = []
     sub_extensions: list[str] = []
@@ -47,13 +29,40 @@ def ext() -> Tuple[tuple[str, ...], tuple[str, ...]]:
     return tuple(sorted(extensions)), tuple(sorted(sub_extensions))
 
 
-def selector() -> Tuple[list[str], list[list[str]], tuple[str, ...]]:
-    print("\nWarning: Files should be sorted alphabetically.")
-    
-    files = lister()
-    extensions, sub_extensions = ext()    
+def lister(extensions: tuple[str, ...], sub_extensions: tuple[str, ...]) -> Tuple[list[str], list[str]]:
+    def sub_recursive(folder: str) -> None:
+        sub_contents = [os.path.join(folder, content) for content in os.listdir(folder)]
 
-    selected_files = [file for file in files if file.endswith(extensions)]
-    sub_files = [file for file in files if file.endswith(sub_extensions)]
+        for sub_content in sub_contents:
+            if os.path.isdir(sub_content):
+                sub_recursive(sub_content)
+            elif sub_content.endswith(extensions) or sub_content.endswith(sub_extensions):
+                os.rename(sub_content, os.path.join(directory, os.path.basename(sub_content)))
 
-    return selected_files, Utils.split_strings(sub_files, False, len(sub_extensions)), sub_extensions
+    try:
+        print("\nIf you want to use the current directory, leave it empty.")
+        directory = input("What directory you want to use: ")
+
+        if not directory:
+            directory = os.getcwd()
+    except OSError:
+        print("Error: This is not a valid directory.")
+
+    if input("\nSub-Recursive search? ") in ('y', "yes"):
+        folders = [os.path.join(directory, content) for content in os.listdir(directory) if os.path.isdir(os.path.join(directory, content))]
+
+        for folder in folders:
+            sub_recursive(folder)
+
+    os.chdir(directory)
+    contents = os.listdir(directory)
+
+    return ([content for content in contents if os.path.isfile(os.path.join(directory, content)) and content.endswith(extensions)],
+            [content for content in contents if os.path.isfile(os.path.join(directory, content)) and content.endswith(sub_extensions)])
+
+
+def main() -> Tuple[list[str], list[list[str]], tuple[str, ...]]:
+    extensions, sub_extensions = ext()
+    files, sub_files = lister(extensions, sub_extensions)
+
+    return files, Utils.split_strings(sub_files, False, len(sub_extensions)), sub_extensions

@@ -12,7 +12,7 @@ class ToFormat:
         self.files = files
         self.name = self.get_name()
 
-        if self.mode in ("imdb", '1'):
+        if self.source in ("imdb", '1'):
             self.years, self.sxxexxes, self.se_total, self.ep_names = IMDb.main(self.mode)
             self.ep_total = [len(season) for season in self.sxxexxes]
         else:
@@ -79,7 +79,8 @@ class ToFormat:
             sxxexxes.append(tmp_sxxexxes)
 
         if sum(ep_total) != len(self.files):
-            raise Exception(f"Error: The number of episodes {sum(self.ep_total)} has been created doesn't match the number of files {len(self.files)}.")
+            raise Exception(f"Error: The number of episodes {sum(self.ep_total)} has been created"
+                            f" doesn't match the number of files {len(self.files)}.")
 
         return sxxexxes, se_total, ep_total
 

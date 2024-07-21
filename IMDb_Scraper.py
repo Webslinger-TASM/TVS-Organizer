@@ -3,7 +3,6 @@ import Utilites as Utils
 from bs4 import BeautifulSoup
 from lxml.etree import XMLSyntaxError
 from requests import get, exceptions
-from re import match
 from typing import Tuple
 from os.path import join
 
@@ -45,30 +44,6 @@ def parser(unparsed_html: str) -> Tuple[list[str], str, str, list[str]]:
     return titles, first_date, last_date, links_seasons
 
 
-def sort_titles(titles: list[str], mode) -> Tuple[list[str], list[str]]:
-    sxxexxes: list[str] = []
-    ep_names: list[str] = []
-
-    for title in titles:
-        sxxexx = match(r"S(\d+)\.E?(\d+)?", title)
-        sxx = f"S{int(sxxexx.group(1)):02d}"
-        exx = f"E{int(sxxexx.group(2)):02d}"
-
-        sxxexxes.append(f"{sxx}{exx}")
-
-        index = len(f"{sxx+exx} _")
-        ep_names.append(Utils.clean_string(title[index:], mode))
-
-    return sxxexxes, ep_names
-
-
-def sort_dates(first_date: str, last_date: str) -> str:
-    if first_date[-4:] != last_date[-4:]:
-        return f"({first_date[-4:]}-{last_date[-4:]})"
-    else:
-        return f"({first_date[-4:]})"
-
-
 def main(mode) -> Tuple[list[str], list[list[str]], int, list[list[str]]]:
     if input("\nDo you want to automatically get the HTML content by requesting the website? (y/n) ") in ('y', 'yes'):
         source = "Online"
@@ -103,9 +78,9 @@ def main(mode) -> Tuple[list[str], list[list[str]], int, list[list[str]]]:
 
         titles, first_date, last_date, links = parser(html)
 
-        years.append(sort_dates(first_date, last_date))
+        years.append(Utils.sort_dates(first_date, last_date))
 
-        tmp_sxxexxes, tmp_titles = sort_titles(titles, mode)
+        tmp_sxxexxes, tmp_titles = Utils.sort_titles(titles, mode)
         sxxexxes.append(tmp_sxxexxes), ep_names.append(tmp_titles)
 
         if se_current == len(links):
@@ -113,4 +88,4 @@ def main(mode) -> Tuple[list[str], list[list[str]], int, list[list[str]]]:
 
         se_current += 1
 
-    return years, sxxexxes,  len(links), ep_names
+    return years, sxxexxes, len(links), ep_names

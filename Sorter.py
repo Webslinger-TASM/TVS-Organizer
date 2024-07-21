@@ -1,4 +1,5 @@
 import Builder
+import Utilites as Utils
 
 import os
 from tqdm import tqdm
@@ -24,25 +25,10 @@ def settings(name) -> List[Union[str, bool]]:
     return [se_addon_name, se_addon_year, ep_addon_name, ep_addon_year]
 
 
-def get_year_range(years: list[str]) -> str:
-    if years[0] != years[-1]:
-        stripped_first_season_year = years[0].strip("()")
-        first_year = stripped_first_season_year.split('-')
-
-        stripped_last_season_year = years[-1].strip("()")
-        last_year = stripped_last_season_year.split('-')
-
-        year = f"({first_year[0]}-{last_year[len(last_year)-1]})"
-    else:
-        year = years[0]
-
-    return year
-
-
-def sort(new_filenames: Builder.ToFormat, sub_files: list[list[str]], sub_extensions: tuple[str, ...], mode) -> None:
+def main(new_filenames: Builder.ToFormat, sub_files: list[list[str]], sub_extensions: tuple[str, ...], mode) -> None:
     addons = settings(new_filenames.name)
     files_dir = os.getcwd()
-    show_dir = os.path.join(files_dir, os.path.basename(new_filenames.name + " " + get_year_range(new_filenames.years)))
+    show_dir = os.path.join(files_dir, os.path.basename(new_filenames.name + " " + Utils.get_year_range(new_filenames.years)))
     os.makedirs(show_dir, exist_ok=True)
 
     index = 0
