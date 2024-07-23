@@ -48,7 +48,7 @@ def lister(extensions: tuple[str, ...], sub_extensions: tuple[str, ...]) -> Tupl
     except OSError:
         print("Error: This is not a valid directory.")
 
-    if input("\nSub-Recursive search? ") in ('y', "yes"):
+    if input("\nSub-Recursive search? (y/n) ") in ('y', "yes"):
         folders = [os.path.join(directory, content) for content in os.listdir(directory) if os.path.isdir(os.path.join(directory, content))]
 
         for folder in folders:

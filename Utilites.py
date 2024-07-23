@@ -47,7 +47,11 @@ def sort_titles(titles: list[str], mode) -> Tuple[list[str], list[str]]:
 
         sxxexxes.append(f"{sxx}{exx}")
 
-        index = len(f"{sxx+exx} _")
+        if len(sxxexxes) >= 10:
+            index = len(f"{sxx+exx}___")
+        else:
+            index = len(f"{sxx+exx}__")
+
         ep_names.append(clean_string(title[index:], mode))
 
     return sxxexxes, ep_names
